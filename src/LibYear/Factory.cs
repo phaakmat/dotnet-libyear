@@ -13,12 +13,15 @@ public static class Factory
 	private const string PackageSourceEnvironmentVariable = "LIBYEAR_PACKAGE_SOURCE";
 	private const string PackageSourcePatEnvironmentVariable = "LIBYEAR_PACKAGE_SOURCE_PAT";
 
-	public static App App(IAnsiConsole console)
+	public static App App(IAnsiConsole console, Settings settings)
 	{
 		var packageVersionChecker = new PackageVersionChecker(PackageMetadataResource());
 		var fileSystem = new FileSystem();
 		var projectRetriever = new ProjectFileManager(fileSystem);
-		return new App(packageVersionChecker, projectRetriever, console);
+		IOutputFormatter formatter = settings.Json
+			? new JsonOutputFormatter()
+			: new ConsoleOutputFormatter(console, settings.QuietMode);
+		return new App(packageVersionChecker, projectRetriever, console, formatter);
 	}
 
 	private static PackageMetadataResource PackageMetadataResource()

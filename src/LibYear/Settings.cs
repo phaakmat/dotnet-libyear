@@ -32,4 +32,8 @@ public class Settings : CommandSettings
 	[CommandOption("-r|--recursive")]
 	[Description("search recursively for all compatible files, even if one is found in a directory passed as an argument")]
 	public bool Recursive { get; set; }
+
+	[CommandOption("--json")]
+	[Description("output results as JSON")]
+	public bool Json { get; set; }
 }

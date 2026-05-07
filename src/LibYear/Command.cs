@@ -17,6 +17,9 @@ public class Command : AsyncCommand<Settings>
 	{
 		try
 		{
+			if (settings.Json)
+				return await Factory.App(_console, settings).Run(settings);
+
 			return await _console.Status().StartAsync("Running...", Run(settings));
 		}
 		catch (Exception e)
@@ -27,5 +30,5 @@ public class Command : AsyncCommand<Settings>
 	}
 
 	private Func<StatusContext, Task<int>> Run(Settings settings)
-		=> async _ => await Factory.App(_console).Run(settings);
+		=> async _ => await Factory.App(_console, settings).Run(settings);
 }
