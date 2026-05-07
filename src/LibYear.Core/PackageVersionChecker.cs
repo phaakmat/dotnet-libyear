@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using LibYear.Core.FileTypes;
 using NuGet.Common;
+using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 
 namespace LibYear.Core;
@@ -57,7 +58,14 @@ public class PackageVersionChecker : IPackageVersionChecker
 
 	public async Task<IReadOnlyCollection<Release>> GetVersions(string packageName)
 	{
-		var metadata = await _metadataResource.GetMetadataAsync(packageName, true, true, NullSourceCacheContext.Instance, NullLogger.Instance, CancellationToken.None);
-		return metadata.Select(m => new Release(m)).ToArray();
+		try
+		{
+			var metadata = await _metadataResource.GetMetadataAsync(packageName, true, true, NullSourceCacheContext.Instance, NullLogger.Instance, CancellationToken.None);
+			return metadata.Select(m => new Release(m)).ToArray();
+		}
+		catch (FatalProtocolException)
+		{
+			return Array.Empty<Release>();
+		}
 	}
 }
