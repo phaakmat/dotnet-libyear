@@ -28,7 +28,7 @@ public static class Factory
 
 		var pat = Environment.GetEnvironmentVariable(PackageSourcePatEnvironmentVariable);
 		if (!string.IsNullOrWhiteSpace(pat))
-			source.Credentials = new PackageSourceCredential(source.Source, "az", pat, isPasswordClearText: true, validAuthenticationTypes: null);
+			source.Credentials = new PackageSourceCredential(source.Source, "az", pat, isPasswordClearText: true, validAuthenticationTypesText: null);
 
 		var provider = Repository.Provider.GetCoreV3();
 		var repo = new SourceRepository(source, provider);
