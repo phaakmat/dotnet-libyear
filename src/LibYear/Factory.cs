@@ -1,3 +1,4 @@
+using System;
 using System.IO.Abstractions;
 using LibYear.Core;
 using NuGet.Configuration;
@@ -8,6 +9,9 @@ namespace LibYear;
 
 public static class Factory
 {
+	private const string DefaultPackageSource = "https://api.nuget.org/v3/index.json";
+	private const string PackageSourceEnvironmentVariable = "LIBYEAR_PACKAGE_SOURCE";
+
 	public static App App(IAnsiConsole console)
 	{
 		var packageVersionChecker = new PackageVersionChecker(PackageMetadataResource());
@@ -18,7 +22,8 @@ public static class Factory
 
 	private static PackageMetadataResource PackageMetadataResource()
 	{
-		var source = new PackageSource("https://api.nuget.org/v3/index.json");
+		var packageSource = Environment.GetEnvironmentVariable(PackageSourceEnvironmentVariable);
+		var source = new PackageSource(string.IsNullOrWhiteSpace(packageSource) ? DefaultPackageSource : packageSource);
 		var provider = Repository.Provider.GetCoreV3();
 		var repo = new SourceRepository(source, provider);
 		return repo.GetResource<PackageMetadataResource>();
