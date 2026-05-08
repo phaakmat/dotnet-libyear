@@ -15,7 +15,7 @@ public static class Factory
 
 	public static App App(IAnsiConsole console, Settings settings)
 	{
-		var packageVersionChecker = new PackageVersionChecker(PackageMetadataResource());
+		var packageVersionChecker = new PackageVersionChecker(PackageMetadataResources());
 		var fileSystem = new FileSystem();
 		var projectRetriever = new ProjectFileManager(fileSystem);
 		IOutputFormatter formatter = settings.Json
@@ -24,15 +24,25 @@ public static class Factory
 		return new App(packageVersionChecker, projectRetriever, console, formatter);
 	}
 
-	private static PackageMetadataResource PackageMetadataResource()
+	private static IReadOnlyList<PackageMetadataResource> PackageMetadataResources()
 	{
-		var packageSource = Environment.GetEnvironmentVariable(PackageSourceEnvironmentVariable);
-		var source = new PackageSource(string.IsNullOrWhiteSpace(packageSource) ? DefaultPackageSource : packageSource);
+		var resources = new List<PackageMetadataResource> { PackageMetadataResource(DefaultPackageSource, null) };
 
-		var pat = Environment.GetEnvironmentVariable(PackageSourcePatEnvironmentVariable);
+		var packageSource = Environment.GetEnvironmentVariable(PackageSourceEnvironmentVariable);
+		if (!string.IsNullOrWhiteSpace(packageSource) && packageSource != DefaultPackageSource)
+		{
+			var pat = Environment.GetEnvironmentVariable(PackageSourcePatEnvironmentVariable);
+			resources.Add(PackageMetadataResource(packageSource, pat));
+		}
+
+		return resources;
+	}
+
+	private static PackageMetadataResource PackageMetadataResource(string sourceUrl, string? pat)
+	{
+		var source = new PackageSource(sourceUrl);
 		if (!string.IsNullOrWhiteSpace(pat))
 			source.Credentials = new PackageSourceCredential(source.Source, "az", pat, isPasswordClearText: true, validAuthenticationTypesText: null);
-
 		var provider = Repository.Provider.GetCoreV3();
 		var repo = new SourceRepository(source, provider);
 		return repo.GetResource<PackageMetadataResource>();

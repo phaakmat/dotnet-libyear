@@ -8,17 +8,27 @@ namespace LibYear.Core;
 
 public class PackageVersionChecker : IPackageVersionChecker
 {
-	private readonly PackageMetadataResource _metadataResource;
+	private readonly IReadOnlyList<PackageMetadataResource> _metadataResources;
 	private readonly IDictionary<string, IReadOnlyCollection<Release>> _versionCache;
 
 	public PackageVersionChecker(PackageMetadataResource metadataResource)
-		: this(metadataResource, new ConcurrentDictionary<string, IReadOnlyCollection<Release>>())
+		: this([metadataResource], new ConcurrentDictionary<string, IReadOnlyCollection<Release>>())
+	{
+	}
+
+	public PackageVersionChecker(IReadOnlyList<PackageMetadataResource> metadataResources)
+		: this(metadataResources, new ConcurrentDictionary<string, IReadOnlyCollection<Release>>())
 	{
 	}
 
 	public PackageVersionChecker(PackageMetadataResource metadataResource, IDictionary<string, IReadOnlyCollection<Release>> versionCache)
+		: this([metadataResource], versionCache)
 	{
-		_metadataResource = metadataResource;
+	}
+
+	public PackageVersionChecker(IReadOnlyList<PackageMetadataResource> metadataResources, IDictionary<string, IReadOnlyCollection<Release>> versionCache)
+	{
+		_metadataResources = metadataResources;
 		_versionCache = versionCache;
 	}
 
@@ -58,14 +68,19 @@ public class PackageVersionChecker : IPackageVersionChecker
 
 	public async Task<IReadOnlyCollection<Release>> GetVersions(string packageName)
 	{
-		try
+		foreach (var resource in _metadataResources)
 		{
-			var metadata = await _metadataResource.GetMetadataAsync(packageName, true, true, NullSourceCacheContext.Instance, NullLogger.Instance, CancellationToken.None);
-			return metadata.Select(m => new Release(m)).ToArray();
+			try
+			{
+				var metadata = await resource.GetMetadataAsync(packageName, true, true, NullSourceCacheContext.Instance, NullLogger.Instance, CancellationToken.None);
+				var releases = metadata.Select(m => new Release(m)).ToArray();
+				if (releases.Length > 0)
+					return releases;
+			}
+			catch (FatalProtocolException)
+			{
+			}
 		}
-		catch (FatalProtocolException)
-		{
-			return Array.Empty<Release>();
-		}
+		return Array.Empty<Release>();
 	}
 }
