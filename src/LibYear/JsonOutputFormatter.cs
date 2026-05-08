@@ -27,12 +27,12 @@ public class JsonOutputFormatter : IOutputFormatter
 					installed = r.Installed == null ? null : new
 					{
 						version = r.Installed.Version.ToString(),
-						released = r.Installed.Date.ToString("yyyy-MM-dd")
+						released = r.Installed.Date?.ToString("yyyy-MM-dd")
 					},
 					latest = r.Latest == null ? null : new
 					{
 						version = r.Latest.Version.ToString(),
-						released = r.Latest.Date.ToString("yyyy-MM-dd")
+						released = r.Latest.Date?.ToString("yyyy-MM-dd")
 					},
 					yearsBehind = r.YearsBehind
 				})

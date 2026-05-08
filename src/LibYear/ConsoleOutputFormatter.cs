@@ -58,9 +58,9 @@ public class ConsoleOutputFormatter : IOutputFormatter
 			table.AddRow(
 				result.Name,
 				result.Installed?.Version.ToString() ?? string.Empty,
-				result.Installed?.Date.ToString("yyyy-MM-dd") ?? string.Empty,
+				result.Installed?.Date?.ToString("yyyy-MM-dd") ?? string.Empty,
 				result.Latest?.Version.ToString() ?? string.Empty,
-				result.Latest?.Date.ToString("yyyy-MM-dd") ?? string.Empty,
+				result.Latest?.Date?.ToString("yyyy-MM-dd") ?? string.Empty,
 				result.YearsBehind.ToString("F1")
 			);
 		}
